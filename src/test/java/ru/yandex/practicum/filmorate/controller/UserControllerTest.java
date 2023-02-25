@@ -8,8 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
-import ru.yandex.practicum.filmorate.exception.UserDataException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.UserNotExistException;
 
 import java.net.URI;
@@ -75,7 +74,7 @@ public class UserControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof UserDataException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //запрос с ошибкой в email
@@ -85,7 +84,7 @@ public class UserControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof InvalidEmailException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //запрос с ошибкой в дате
@@ -95,7 +94,7 @@ public class UserControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof UserDataException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //пустой запрос

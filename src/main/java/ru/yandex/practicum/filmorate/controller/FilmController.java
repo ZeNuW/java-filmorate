@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.FilmDataException;
 import ru.yandex.practicum.filmorate.exception.FilmNotExistException;
-import ru.yandex.practicum.filmorate.exception.InvalidFilmNameException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,27 +29,15 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         if (films.containsKey(film.getId())) {
-            log.warn("Передан который уже был добавлен " + film);
+            log.warn("Передан фильм который уже был добавлен " + film);
             throw new FilmAlreadyExistException("Фильм с названием "
                     + film.getName() + " уже есть в списке фильмов.");
-        }
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Передан фильм с отсутствующим названием " + film);
-            throw new InvalidFilmNameException("Название фильма не может быть пустым.");
         }
         if (film.getReleaseDate().isBefore(firstFilmReleaseDate)) {
             log.warn("Передан фильм с невозможной датой выхода " + film);
             throw new FilmDataException("Дата релиза фильма не может быть раньше 28 декабря 1895 года.");
-        }
-        if (film.getDescription().length() > 200) {
-            log.warn("Описание фильма содержит больше 200 символов " + film);
-            throw new FilmDataException("Описание фильма должно содержать меньше 200 символов.");
-        }
-        if (film.getDuration() <= 0) {
-            log.warn("Длительность фильма меньше или равно 0" + film);
-            throw new FilmDataException("Длительность фильма не может быть отрицательной или равной 0.");
         }
         film.setId(++id);
         films.put(film.getId(), film);
@@ -58,13 +46,10 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film put(@RequestBody Film film) {
+    public Film put(@Valid @RequestBody Film film) {
         if (films.get(film.getId()) == null) {
             log.warn("Фильма " + film + " не в списке.");
             throw new FilmNotExistException("Данного фильма не существует.");
-        }
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new InvalidFilmNameException("Название фильма не может быть пустым.");
         }
         films.put(film.getId(), film);
         log.debug("Добавлен/обновлён фильм: " + film);

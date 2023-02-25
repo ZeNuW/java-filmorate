@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.exception.*;
 
 import java.net.URI;
@@ -76,7 +77,7 @@ public class FilmControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof InvalidFilmNameException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //запрос с ошибкой в описании
@@ -90,7 +91,7 @@ public class FilmControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof FilmDataException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //запрос с ошибкой в дате
@@ -110,7 +111,7 @@ public class FilmControllerTest {
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
-                        result.getResolvedException() instanceof FilmDataException))
+                        result.getResolvedException() instanceof MethodArgumentNotValidException))
                 .andExpect(status().is4xxClientError());
 
         //пустой запрос
