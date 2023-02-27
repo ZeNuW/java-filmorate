@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class FilmAlreadyExistException extends RuntimeException {
-
     public FilmAlreadyExistException(String s) {
         super(s);
     }

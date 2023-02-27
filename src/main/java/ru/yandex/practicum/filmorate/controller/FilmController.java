@@ -20,7 +20,7 @@ import java.util.Map;
 public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
-    private final LocalDate firstFilmReleaseDate = LocalDate.of(1895, 12, 28);
+    private static final LocalDate FIRST_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private int id = 0;
 
     @GetMapping
@@ -35,7 +35,7 @@ public class FilmController {
             throw new FilmAlreadyExistException("Фильм с названием "
                     + film.getName() + " уже есть в списке фильмов.");
         }
-        if (film.getReleaseDate().isBefore(firstFilmReleaseDate)) {
+        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE_DATE)) {
             log.warn("Передан фильм с невозможной датой выхода " + film);
             throw new FilmDataException("Дата релиза фильма не может быть раньше 28 декабря 1895 года.");
         }
@@ -52,7 +52,7 @@ public class FilmController {
             throw new FilmNotExistException("Данного фильма не существует.");
         }
         films.put(film.getId(), film);
-        log.debug("Добавлен/обновлён фильм: " + film);
+        log.debug("Обновлён фильм: " + film);
         return film;
     }
 }

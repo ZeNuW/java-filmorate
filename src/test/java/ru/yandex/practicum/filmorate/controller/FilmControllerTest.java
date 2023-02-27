@@ -134,7 +134,7 @@ public class FilmControllerTest {
                 .content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON));
 
-        // обновление задачи
+        // обновление фильма
         jsonString =
                 "{\"id\":1,\"name\":\"Film Updated\",\"releaseDate\":\"1989-04-17\"," +
                         "\"description\":\"New film update decription\",\"duration\":190,\"rate\":4}";

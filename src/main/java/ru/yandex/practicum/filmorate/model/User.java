@@ -8,17 +8,21 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
 
+/*
+Единственный вопрос, наверное уже на будущие спринты, как я понял, мы их теперь в таком виде будет сдавать, через PullRequest
+Лучше для каждой попытки создавать новый запрос или уже работать в созданном?
+ */
 @Data
 public class User {
 
-    int id;
+    @NotNull(message = "ID должен быть задан.")
+    private int id;
     @Email(message = "Email задан некорректно.")
-    String email;
-    @NotNull(message = "Логин должен быть задан.")
+    private String email;
     @NotBlank(message = "Логин не может быть пустым.")
-    String login;
-    String name;
+    private String login;
+    private String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
-    LocalDate birthday;
+    private LocalDate birthday;
 
 }
