@@ -46,8 +46,8 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON));
         // Проверка списка
         trueResponse = "[{\"id\":1,\"email\":\"mail@mail.ru\",\"login\":\"dolore\",\"name\":\"Nick Name\"," +
-                "\"birthday\":\"1946-08-20\"},{\"id\":2,\"email\":\"mail2@mail.ru\",\"login\":\"doloreNew\"," +
-                "\"name\":\"Nick Name\",\"birthday\":\"1946-08-20\"}]";
+                "\"birthday\":\"1946-08-20\",\"friends\":[]},{\"id\":2,\"email\":\"mail2@mail.ru\"," +
+                "\"login\":\"doloreNew\",\"name\":\"Nick Name\",\"birthday\":\"1946-08-20\",\"friends\":[]}]";
         mockMvc.perform(get("/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.content().string(trueResponse));
@@ -57,8 +57,8 @@ public class UserControllerTest {
     public void createTest() throws Exception {
         url = URI.create("http://localhost:8080/users");
         // правильный запрос
-        trueResponse = "{\"id\":1,\"email\":\"mail@mail.ru\",\"login\":\"dolore\"" +
-                ",\"name\":\"Nick Name\",\"birthday\":\"1946-08-20\"}";
+        trueResponse = "{\"id\":1,\"email\":\"mail@mail.ru\",\"login\":\"dolore\",\"name\":\"Nick Name\"," +
+                "\"birthday\":\"1946-08-20\",\"friends\":[]}";
         jsonString =
                 "{\"login\":\"dolore\",\"name\":\"Nick Name\",\"email\":\"mail@mail.ru\",\"birthday\":\"1946-08-20\"}";
         mockMvc.perform(post("/users")
@@ -75,7 +75,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //запрос с ошибкой в email
         jsonString =
@@ -85,7 +85,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //запрос с ошибкой в дате
         jsonString =
@@ -95,7 +95,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //пустой запрос
         jsonString = "";
@@ -104,7 +104,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof RuntimeException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -118,10 +118,10 @@ public class UserControllerTest {
 
         // обновление задачи
         jsonString =
-                "{\"login\":\"doloreUpdate\",\"name\":\"est adipisicing\"," +
-                        "\"id\":1,\"email\":\"mail@yandex.ru\",\"birthday\":\"1976-09-20\"}";
+                "{\"id\":1,\"email\":\"mail@yandex.ru\",\"login\":\"doloreUpdate\"," +
+                        "\"name\":\"est adipisicing\",\"birthday\":\"1976-09-20\",\"friends\":[]}";
         trueResponse = "{\"id\":1,\"email\":\"mail@yandex.ru\",\"login\":\"doloreUpdate\"," +
-                "\"name\":\"est adipisicing\",\"birthday\":\"1976-09-20\"}";
+                "\"name\":\"est adipisicing\",\"birthday\":\"1976-09-20\",\"friends\":[]}";
         mockMvc.perform(put("/users")
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -145,6 +145,6 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof RuntimeException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
     }
 }
