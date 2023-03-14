@@ -27,6 +27,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Film getFilm(int id) {
+        if (!films.containsKey(id)) {
+            throw new FilmNotExistException("Фильма с id " + id + " не существует.");
+        }
+        return films.get(id);
+    }
+
+    @Override
     public Film create(Film film) {
         if (films.containsKey(film.getId())) {
             log.warn("Передан фильм который уже был добавлен " + film);
@@ -52,10 +60,5 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.put(film.getId(), film);
         log.debug("Обновлён фильм: " + film);
         return film;
-    }
-
-    @Override
-    public Map<Integer, Film> getFilms() {
-        return films;
     }
 }

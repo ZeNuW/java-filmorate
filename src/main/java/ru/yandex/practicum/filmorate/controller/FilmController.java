@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -15,12 +14,10 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @Autowired
-    public FilmController(FilmStorage filmStorage, FilmService filmService) {
-        this.filmStorage = filmStorage;
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
@@ -31,17 +28,17 @@ public class FilmController {
 
     @GetMapping
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        return filmService.findAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        return filmStorage.create(film);
+        return filmService.create(film);
     }
 
     @PutMapping
     public Film put(@Valid @RequestBody Film film) {
-        return filmStorage.put(film);
+        return filmService.put(film);
     }
 
     @PutMapping("{id}/like/{userId}")
@@ -57,8 +54,7 @@ public class FilmController {
     }
 
     @GetMapping("popular")
-    public List<Film> getTopLikedFilms(@RequestParam(value = "count", defaultValue = "10") int count) {
+    public List<Film> getTopLikedFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.topLikedFilms(count);
     }
-
 }
