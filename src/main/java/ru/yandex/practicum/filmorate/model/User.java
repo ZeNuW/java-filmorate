@@ -2,16 +2,11 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
-/*
-Единственный вопрос, наверное уже на будущие спринты, как я понял, мы их теперь в таком виде будет сдавать, через PullRequest
-Лучше для каждой попытки создавать новый запрос или уже работать в созданном?
- */
 @Data
 public class User {
 
@@ -24,5 +19,5 @@ public class User {
     private String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
-
+    private Set<Integer> friends = new HashSet<>();
 }

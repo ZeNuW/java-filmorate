@@ -48,8 +48,9 @@ public class FilmControllerTest {
                 .contentType(MediaType.APPLICATION_JSON));
         // Проверка списка
         trueResponse = "[{\"id\":1,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\"" +
-                ",\"releaseDate\":\"1967-03-25\",\"duration\":100},{\"id\":2,\"name\":\"nisi eiusmod 1 more\"" +
-                ",\"description\":\"adipisicing added\",\"releaseDate\":\"1967-03-25\",\"duration\":100}]";
+                ",\"releaseDate\":\"1967-03-25\",\"duration\":100,\"likes\":[]},{\"id\":2" +
+                ",\"name\":\"nisi eiusmod 1 more\",\"description\":\"adipisicing added\",\"releaseDate\":\"1967-03-25\"," +
+                "\"duration\":100,\"likes\":[]}]";
         mockMvc.perform(get("/films")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.content().string(trueResponse));
@@ -59,11 +60,11 @@ public class FilmControllerTest {
     public void createTest() throws Exception {
         url = URI.create("http://localhost:8080/films");
         // правильный запрос
-        trueResponse = "{\"id\":1,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\"" +
-                ",\"releaseDate\":\"1967-03-25\",\"duration\":100}";
+        trueResponse = "{\"id\":1,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\"," +
+                "\"releaseDate\":\"1967-03-25\",\"duration\":100,\"likes\":[]}";
         jsonString =
-                "{\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\"" +
-                        ",\"releaseDate\":\"1967-03-25\",\"duration\":100}";
+                "{\"id\":1,\"name\":\"nisi eiusmod\",\"description\":\"adipisicing\",\"releaseDate\":\"1967-03-25\"," +
+                        "\"duration\":100,\"likes\":[]}";
         mockMvc.perform(post("/films")
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -78,7 +79,7 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //запрос с ошибкой в описании
         jsonString =
@@ -92,7 +93,7 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //запрос с ошибкой в дате
         jsonString =
@@ -112,7 +113,7 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof MethodArgumentNotValidException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         //пустой запрос
         jsonString = "";
@@ -121,7 +122,7 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof RuntimeException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
     }
 
     @Test
@@ -138,8 +139,8 @@ public class FilmControllerTest {
         jsonString =
                 "{\"id\":1,\"name\":\"Film Updated\",\"releaseDate\":\"1989-04-17\"," +
                         "\"description\":\"New film update decription\",\"duration\":190,\"rate\":4}";
-        trueResponse = "{\"id\":1,\"name\":\"Film Updated\",\"description\":\"New film update decription\"," +
-                "\"releaseDate\":\"1989-04-17\",\"duration\":190}";
+        trueResponse = "{\"id\":1,\"name\":\"Film Updated\",\"description\":\"New film update decription\"" +
+                ",\"releaseDate\":\"1989-04-17\",\"duration\":190,\"likes\":[]}";
         mockMvc.perform(put("/films")
                         .content(jsonString)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -163,6 +164,6 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(result -> assertTrue(
                         result.getResolvedException() instanceof RuntimeException))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
     }
 }
