@@ -115,7 +115,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Set<FilmMpa> getAllMpa() {
         String sql = "SELECT * FROM MPA ORDER BY mpa_id";
-    return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs)));
+        return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs)));
     }
 
     private Film makeFilm(ResultSet rs) throws SQLException {
@@ -143,7 +143,6 @@ public class FilmDbStorage implements FilmStorage {
     private FilmGenre makeFilmGenre(ResultSet rs) throws SQLException {
         return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
     }
-
 
     private FilmMpa getFilmMpa(int mpa_id) {
         String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
@@ -198,7 +197,7 @@ public class FilmDbStorage implements FilmStorage {
     private void updateFilmGenre(Film film) {
         String sql = "SELECT * FROM genres where genre_id IN (SELECT genre_id FROM film_genres WHERE film_id = ?)";
         Set<Integer> sqlTableGenres = new HashSet<>(
-                jdbcTemplate.query(sql,(rs,rowNum) -> makeFilmGenre(rs).getId(),film.getId()));
+                jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs).getId(), film.getId()));
         Set<Integer> filmGenres;
         if (film.getGenres() != null) {
             filmGenres = film.getGenres().stream().map(FilmGenre::getId).collect(Collectors.toSet());

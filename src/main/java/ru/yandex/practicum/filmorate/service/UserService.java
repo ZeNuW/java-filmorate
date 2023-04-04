@@ -46,7 +46,6 @@ public class UserService {
         return friendsList;
     }
 
-    //TODO переделать
     public void addFriend(int id, int friendId) {
         if (id <= 0) {
             throw new UserDataException("Передан отрицательный id " + id);
@@ -60,10 +59,8 @@ public class UserService {
         User user = getUser(id);
         user.getFriends().add(friendId);
         userStorage.update(user);
-        //userStorage.getUser(friendId).getFriends().add(id);
     }
 
-    //TODO переделать
     public void deleteFriend(int id, int friendId) {
         if (id <= 0) {
             throw new UserDataException("Передан отрицательный id " + id);
@@ -74,7 +71,6 @@ public class UserService {
         User user = getUser(id);
         user.getFriends().remove(friendId);
         userStorage.update(user);
-        //userStorage.getUser(friendId).getFriends().remove(id);
     }
 
     public List<User> getMutualFriends(int id, int friendId) {
