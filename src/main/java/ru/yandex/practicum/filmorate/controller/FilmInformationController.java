@@ -27,9 +27,9 @@ public class FilmInformationController {
         return filmService.getAllGenres();
     }
 
-    @GetMapping("/genres/{genre_id}")
-    public FilmGenre getGenre(@PathVariable int genre_id) {
-        return filmService.getGenre(genre_id);
+    @GetMapping("/genres/{genreId}")
+    public FilmGenre getGenre(@PathVariable int genreId) {
+        return filmService.getGenre(genreId);
     }
 
     @GetMapping("/mpa")
@@ -37,8 +37,8 @@ public class FilmInformationController {
         return filmService.getAllMpa();
     }
 
-    @GetMapping("/mpa/{mpa_id}")
-    public FilmMpa getMpa(@PathVariable int mpa_id) {
-        return filmService.getMpa(mpa_id);
+    @GetMapping("/mpa/{mpaId}")
+    public FilmMpa getMpa(@PathVariable int mpaId) {
+        return filmService.getMpa(mpaId);
     }
 }

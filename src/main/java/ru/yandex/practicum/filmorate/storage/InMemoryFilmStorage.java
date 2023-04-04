@@ -80,11 +80,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public FilmGenre getGenre(int genre_id) {
+    public FilmGenre getGenre(int genreId) {
         return genres.stream()
-                .filter(filmGenre -> filmGenre.getId() == genre_id)
+                .filter(filmGenre -> filmGenre.getId() == genreId)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Жанр с id " + genre_id + " не найден."));
+                .orElseThrow(() -> new IllegalArgumentException("Жанр с id " + genreId + " не найден."));
     }
 
     @Override
@@ -93,11 +93,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public FilmMpa getMpa(int mpa_id) {
+    public FilmMpa getMpa(int mpaId) {
         return mpa.stream()
-                .filter(filmMpa -> filmMpa.getId() == mpa_id)
+                .filter(filmMpa -> filmMpa.getId() == mpaId)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("MPA с id " + mpa_id + " не найден."));
+                .orElseThrow(() -> new IllegalArgumentException("MPA с id " + mpaId + " не найден."));
     }
 
     @Override

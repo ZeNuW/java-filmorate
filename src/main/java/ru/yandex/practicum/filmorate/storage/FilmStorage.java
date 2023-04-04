@@ -17,11 +17,11 @@ public interface FilmStorage {
 
     Film getFilm(int id);
 
-    FilmGenre getGenre(int genre_id);
+    FilmGenre getGenre(int genreId);
 
     Set<FilmGenre> getAllGenres();
 
-    FilmMpa getMpa(int mpa_id);
+    FilmMpa getMpa(int mpaId);
 
     Set<FilmMpa> getAllMpa();
 }

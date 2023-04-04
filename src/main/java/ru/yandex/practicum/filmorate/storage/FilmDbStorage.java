@@ -87,12 +87,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public FilmGenre getGenre(int genre_id) {
+    public FilmGenre getGenre(int genreId) {
         String sql = "SELECT * FROM GENRES where genre_id = ?";
         try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs), genre_id).get(0);
+            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs), genreId).get(0);
         } catch (IndexOutOfBoundsException e) {
-            throw new FilmInformationNotExistException("Жанра с id " + genre_id + " не существует.");
+            throw new FilmInformationNotExistException("Жанра с id " + genreId + " не существует.");
         }
     }
 
@@ -103,12 +103,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public FilmMpa getMpa(int mpa_id) {
+    public FilmMpa getMpa(int mpaId) {
         String sql = "SELECT * FROM MPA where mpa_id = ?";
         try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs), mpa_id).get(0);
+            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs), mpaId).get(0);
         } catch (IndexOutOfBoundsException e) {
-            throw new FilmInformationNotExistException("MPA с id " + mpa_id + " не существует.");
+            throw new FilmInformationNotExistException("MPA с id " + mpaId + " не существует.");
         }
     }
 
@@ -144,12 +144,12 @@ public class FilmDbStorage implements FilmStorage {
         return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
     }
 
-    private FilmMpa getFilmMpa(int mpa_id) {
+    private FilmMpa getFilmMpa(int mpaId) {
         String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
         try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs), mpa_id).get(0);
+            return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs), mpaId).get(0);
         } catch (IndexOutOfBoundsException e) {
-            throw new FilmDataException("MPA с id " + mpa_id + " не существует.");
+            throw new FilmDataException("MPA с id " + mpaId + " не существует.");
         }
     }
 
@@ -189,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
             return;
         }
         List<Object[]> args = likes.stream()
-                .map(user_id -> new Object[]{film.getId(), user_id})
+                .map(userId -> new Object[]{film.getId(), userId})
                 .collect(Collectors.toList());
         jdbcTemplate.batchUpdate(sql, args);
     }
@@ -217,7 +217,7 @@ public class FilmDbStorage implements FilmStorage {
             return;
         }
         List<Object[]> args = genres.stream()
-                .map(genre_id -> new Object[]{film.getId(), genre_id})
+                .map(genreId -> new Object[]{film.getId(), genreId})
                 .collect(Collectors.toList());
         jdbcTemplate.batchUpdate(sql, args);
     }

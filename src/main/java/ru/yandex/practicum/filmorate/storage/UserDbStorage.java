@@ -89,7 +89,7 @@ public class UserDbStorage implements UserStorage {
             return;
         }
         List<Object[]> args = friends.stream()
-                .map(friend_id -> new Object[]{user.getId(), friend_id})
+                .map(friendId -> new Object[]{user.getId(), friendId})
                 .collect(Collectors.toList());
         jdbcTemplate.batchUpdate(sql, args);
     }

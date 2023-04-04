@@ -83,12 +83,12 @@ public class FilmService {
         return filmStorage.getAllGenres();
     }
 
-    public FilmGenre getGenre(int genre_id) {
-        return filmStorage.getGenre(genre_id);
+    public FilmGenre getGenre(int genreId) {
+        return filmStorage.getGenre(genreId);
     }
 
-    public FilmMpa getMpa(int mpa_id) {
-        return filmStorage.getMpa(mpa_id);
+    public FilmMpa getMpa(int mpaId) {
+        return filmStorage.getMpa(mpaId);
     }
 
     public Set<FilmMpa> getAllMpa() {
