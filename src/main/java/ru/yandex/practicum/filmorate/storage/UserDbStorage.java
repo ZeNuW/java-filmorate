@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -67,31 +66,49 @@ public class UserDbStorage implements UserStorage {
     }
 
     private void updateFriends(User user) {
+        Set<Integer> diffFriends;
+        String action;
         String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
         Set<Integer> sqlTableFriends = new HashSet<>(
                 jdbcTemplate.queryForList(sql, Integer.class, user.getId()));
-        Set<Integer> userFriends;
+        Set<Integer> userFriends = new HashSet<>();
         if (user.getFriends() != null) {
-            userFriends = new HashSet<>(user.getFriends());
-        } else {
-            userFriends = new HashSet<>();
+            userFriends.addAll(user.getFriends());
         }
-        Set<Integer> friends;
         if (sqlTableFriends.size() < userFriends.size()) {
             sql = "INSERT INTO friends (user_id,friend_id) VALUES (?,?)";
-            friends = new HashSet<>(userFriends);
-            friends.removeAll(sqlTableFriends);
+            diffFriends = new HashSet<>(userFriends);
+            diffFriends.removeAll(sqlTableFriends);
+            action = "INSERT";
         } else if (sqlTableFriends.size() > userFriends.size()) {
             sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-            friends = new HashSet<>(sqlTableFriends);
-            friends.removeAll(userFriends);
+            diffFriends = new HashSet<>(sqlTableFriends);
+            diffFriends.removeAll(userFriends);
+            action = "DELETE";
         } else {
             return;
         }
-        List<Object[]> args = friends.stream()
-                .map(friendId -> new Object[]{user.getId(), friendId})
-                .collect(Collectors.toList());
-        jdbcTemplate.batchUpdate(sql, args);
+        //Тут я сделал так, чтобы всё работало, даже если будет изменено несколько друзей, хотя вообще такого быть не должно
+        String finalSql = sql;
+        diffFriends.forEach(friendId -> jdbcTemplate.update(finalSql, user.getId(), friendId));
+        diffFriends.forEach(friendId -> changeFriendshipStatus(user.getId(), friendId, action));
+    }
+
+    private void changeFriendshipStatus(int userId, int friendId, String action) {
+        //проверяем, что user_id уже является другом friend_id, поэтому в jdbc обратный порядок
+        String sql = "SELECT COUNT(*) > 0 FROM friends WHERE user_id = ? AND friend_id = ?";
+        boolean isFriend = Boolean.TRUE.equals(
+                jdbcTemplate.queryForObject(sql, Boolean.class, friendId, userId));
+        if (isFriend && action.equals("INSERT")) {
+            sql = "UPDATE friends SET confirmed_status = true WHERE user_id = ? AND friend_id = ?";
+            //обновляем статусы дружбы обоих пользователей
+            jdbcTemplate.update(sql, friendId, userId);
+            jdbcTemplate.update(sql, userId, friendId);
+        }
+        if (isFriend && action.equals("DELETE")) {
+            sql = "UPDATE friends SET confirmed_status = false WHERE user_id = ? AND friend_id = ?";
+            jdbcTemplate.update(sql, friendId, userId);
+        }
     }
 
     @Override
