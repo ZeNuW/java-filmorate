@@ -21,7 +21,7 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма не может быть отрицательной или равной 0")
     private int duration;
-    private Set<Integer> likes;
+    private int likes;
     private Set<FilmGenre> genres;
     private FilmMpa mpa;
 }

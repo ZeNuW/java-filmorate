@@ -88,7 +88,6 @@ public class UserDbStorage implements UserStorage {
         } else {
             return;
         }
-        //Тут я сделал так, чтобы всё работало, даже если будет изменено несколько друзей, хотя вообще такого быть не должно
         String finalSql = sql;
         diffFriends.forEach(friendId -> jdbcTemplate.update(finalSql, user.getId(), friendId));
         diffFriends.forEach(friendId -> changeFriendshipStatus(user.getId(), friendId, action));
@@ -114,9 +113,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getUser(int id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
-        try {
-            return jdbcTemplate.query(sql, (rs, rowNum) -> (makeUser(rs)), id).get(0);
-        } catch (IndexOutOfBoundsException e) {
+        List<User> user = jdbcTemplate.query(sql, (rs, rowNum) -> (makeUser(rs)), id);
+        if (!user.isEmpty()) {
+            return user.get(0);
+        } else {
             throw new UserNotExistException("Пользователя с id: " + id + " не существует");
         }
     }
@@ -127,7 +127,7 @@ public class UserDbStorage implements UserStorage {
                 rs.getString("login"),
                 rs.getString("email"),
                 rs.getObject("birthday", LocalDate.class),
-                getUserFriends(rs.getInt("user_id")));
+                 getUserFriends(rs.getInt("user_id")));
     }
 
     private Set<Integer> getUserFriends(int userId) {

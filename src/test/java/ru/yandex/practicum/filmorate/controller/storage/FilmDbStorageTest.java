@@ -37,12 +37,12 @@ public class FilmDbStorageTest {
         //add 2 films
         Set<FilmGenre> filmGenres = new HashSet<>();
         Film film = new Film(0, "nisi eiusmod", "adipisicing",
-                LocalDate.of(1967, 3, 25), 100, new HashSet<>(),
+                LocalDate.of(1967, 3, 25), 100, 0,
                 filmGenres, new FilmMpa(1, "G"));
         filmStorage.create(film);
         filmGenres.add(new FilmGenre(1, "Драма"));
         Film film2 = new Film(0, "New film", "New film about friends",
-                LocalDate.of(1999, 4, 30), 120, new HashSet<>(),
+                LocalDate.of(1999, 4, 30), 120, 0,
                 filmGenres, new FilmMpa(3, "PG-13"));
         filmStorage.create(film2);
     }
@@ -88,7 +88,7 @@ public class FilmDbStorageTest {
         filmGenres.add(new FilmGenre(1, "Комедия"));
         filmGenres.add(new FilmGenre(2, "Драма"));
         Film film = new Film(0, "Test film 3", "New test film",
-                LocalDate.of(2000, 1, 1), 300, new HashSet<>(), filmGenres,
+                LocalDate.of(2000, 1, 1), 300, 0, filmGenres,
                 new FilmMpa(5, "NC-17"));
         filmStorage.create(film);
         assertThat(filmStorage.getFilm(3))
@@ -113,65 +113,12 @@ public class FilmDbStorageTest {
         filmGenres = new LinkedHashSet<>();
         //ok
         Film film = new Film(1, "Film Updated", "New test film",
-                LocalDate.of(1984, 4, 17), 190, new HashSet<>(), filmGenres,
+                LocalDate.of(1984, 4, 17), 190, 0, filmGenres,
                 new FilmMpa(2, "PG"));
         filmStorage.put(film);
         assertEquals(film, filmStorage.getFilm(1), "Фильм не был обновлён");
         //fail
         film.setId(99);
         assertThrows(FilmNotExistException.class, () -> filmStorage.put(film));
-    }
-
-    @Test
-    public void testGetGenre() {
-        assertEquals(new FilmGenre(1, "Комедия"),
-                filmStorage.getGenre(1), "Жанры отличаются");
-        assertEquals(new FilmGenre(2, "Драма"),
-                filmStorage.getGenre(2), "Жанры отличаются");
-        assertEquals(new FilmGenre(3, "Мультфильм"),
-                filmStorage.getGenre(3), "Жанры отличаются");
-        assertEquals(new FilmGenre(4, "Триллер"),
-                filmStorage.getGenre(4), "Жанры отличаются");
-        assertEquals(new FilmGenre(5, "Документальный"),
-                filmStorage.getGenre(5), "Жанры отличаются");
-    }
-
-    @Test
-    @Transactional
-    public void testGetAllGenres() {
-        filmGenres = new LinkedHashSet<>();
-        filmGenres.add(new FilmGenre(1, "Комедия"));
-        filmGenres.add(new FilmGenre(2, "Драма"));
-        filmGenres.add(new FilmGenre(3, "Мультфильм"));
-        filmGenres.add(new FilmGenre(4, "Триллер"));
-        filmGenres.add(new FilmGenre(5, "Документальный"));
-        filmGenres.add(new FilmGenre(6, "Боевик"));
-        assertEquals(filmGenres, filmStorage.getAllGenres(), "Списки жанров отличаются");
-    }
-
-    @Test
-    public void testGetMpa() {
-        assertEquals(new FilmMpa(1, "G"),
-                filmStorage.getMpa(1), "MPA отличаются");
-        assertEquals(new FilmMpa(2, "PG"),
-                filmStorage.getMpa(2), "MPA отличаются");
-        assertEquals(new FilmMpa(3, "PG-13"),
-                filmStorage.getMpa(3), "MPA отличаются");
-        assertEquals(new FilmMpa(4, "R"),
-                filmStorage.getMpa(4), "MPA отличаются");
-        assertEquals(new FilmMpa(5, "NC-17"),
-                filmStorage.getMpa(5), "MPA отличаются");
-    }
-
-    @Test
-    @Transactional
-    public void testGetAllMpa() {
-        Set<FilmMpa> filmMpa = new LinkedHashSet<>();
-        filmMpa.add(new FilmMpa(1, "G"));
-        filmMpa.add(new FilmMpa(2, "PG"));
-        filmMpa.add(new FilmMpa(3, "PG-13"));
-        filmMpa.add(new FilmMpa(4, "R"));
-        filmMpa.add(new FilmMpa(5, "NC-17"));
-        assertEquals(filmMpa, filmStorage.getAllMpa(), "Списки MPA отличаются");
     }
 }

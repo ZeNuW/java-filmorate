@@ -6,9 +6,6 @@ import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.FilmDataException;
 import ru.yandex.practicum.filmorate.exception.FilmNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.FilmMpa;
-
 import java.time.LocalDate;
 import java.util.*;
 
@@ -18,24 +15,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate FIRST_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-    private final Set<FilmGenre> genres;
-    private final Set<FilmMpa> mpa;
     private int id = 0;
 
     public InMemoryFilmStorage() {
-        this.genres = new HashSet<>();
-        genres.add(new FilmGenre(1, "Комедия"));
-        genres.add(new FilmGenre(2, "Драма"));
-        genres.add(new FilmGenre(3, "Мультфильм"));
-        genres.add(new FilmGenre(4, "Триллер"));
-        genres.add(new FilmGenre(5, "Документальный"));
-        genres.add(new FilmGenre(6, "Боевик"));
-        this.mpa = new HashSet<>();
-        mpa.add(new FilmMpa(1, "G"));
-        mpa.add(new FilmMpa(2, "PG"));
-        mpa.add(new FilmMpa(3, "PG-13"));
-        mpa.add(new FilmMpa(4, "R"));
-        mpa.add(new FilmMpa(5, "NC-17"));
     }
 
     @Override
@@ -77,31 +59,5 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.put(film.getId(), film);
         log.debug("Обновлён фильм: " + film);
         return film;
-    }
-
-    @Override
-    public FilmGenre getGenre(int genreId) {
-        return genres.stream()
-                .filter(filmGenre -> filmGenre.getId() == genreId)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Жанр с id " + genreId + " не найден."));
-    }
-
-    @Override
-    public Set<FilmGenre> getAllGenres() {
-        return genres;
-    }
-
-    @Override
-    public FilmMpa getMpa(int mpaId) {
-        return mpa.stream()
-                .filter(filmMpa -> filmMpa.getId() == mpaId)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("MPA с id " + mpaId + " не найден."));
-    }
-
-    @Override
-    public Set<FilmMpa> getAllMpa() {
-        return mpa;
     }
 }
