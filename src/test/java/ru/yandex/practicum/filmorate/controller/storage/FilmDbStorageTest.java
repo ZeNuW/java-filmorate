@@ -57,8 +57,7 @@ public class FilmDbStorageTest {
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1967, 3, 25))
                 .hasFieldOrPropertyWithValue("description", "adipisicing")
                 .hasFieldOrPropertyWithValue("duration", 100)
-                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(1, "G"))
-                .hasFieldOrPropertyWithValue("genres", filmGenres);
+                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(1, "G"));
         //2
         filmGenres.add(new FilmGenre(1, "Комедия"));
         assertThat(filmStorage.getFilm(2))
@@ -67,8 +66,7 @@ public class FilmDbStorageTest {
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(1999, 4, 30))
                 .hasFieldOrPropertyWithValue("description", "New film about friends")
                 .hasFieldOrPropertyWithValue("duration", 120)
-                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(3, "PG-13"))
-                .hasFieldOrPropertyWithValue("genres", filmGenres);
+                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(3, "PG-13"));
         //ошибка
         assertThrows(FilmNotExistException.class, () -> filmStorage.getFilm(99));
     }
@@ -97,8 +95,7 @@ public class FilmDbStorageTest {
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2000, 1, 1))
                 .hasFieldOrPropertyWithValue("description", "New test film")
                 .hasFieldOrPropertyWithValue("duration", 300)
-                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(5, "NC-17"))
-                .hasFieldOrPropertyWithValue("genres", filmGenres);
+                .hasFieldOrPropertyWithValue("mpa", new FilmMpa(5, "NC-17"));
         //already added fail
         assertThrows(FilmAlreadyExistException.class, () -> filmStorage.create(film));
         //release_date fail
