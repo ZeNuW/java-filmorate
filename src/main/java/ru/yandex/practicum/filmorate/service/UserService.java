@@ -47,6 +47,6 @@ public class UserService {
     }
 
     public List<User> getMutualFriends(int id, int friendId) {
-        return userStorage.getMutualFriends(id,friendId);
+        return userStorage.getMutualFriends(id, friendId);
     }
 }

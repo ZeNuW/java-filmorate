@@ -58,5 +58,4 @@ public class FilmInformationDbStorage implements FilmInformation {
     private FilmGenre makeFilmGenre(ResultSet rs) throws SQLException {
         return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
     }
-
 }
