@@ -17,4 +17,6 @@ public interface FilmStorage {
     void setLike(int filmId, int userId);
 
     void deleteLike(int filmId, int userId);
+
+    List<Film> topLikedFilms(int count);
 }

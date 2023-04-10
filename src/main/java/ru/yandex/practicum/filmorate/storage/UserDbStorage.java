@@ -147,9 +147,8 @@ public class UserDbStorage implements UserStorage {
     }
 
     public List<User> getFriends(int id) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        List<Integer> friendIds = jdbcTemplate.queryForList(sql, Integer.class, id);
-        return friendIds.stream().map(this::getUser).collect(Collectors.toList());
+        String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friends WHERE user_id = " + id + ")";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
     public void addFriend(int id, int friendId) {

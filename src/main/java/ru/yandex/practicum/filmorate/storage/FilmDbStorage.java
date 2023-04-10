@@ -30,7 +30,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        String sql = "SELECT f.*, COUNT(fl.user_id) AS total_likes," +
+        String sql = "SELECT f.*," +
                 "(SELECT fm.name WHERE fm.MPA_ID = f.MPA_ID) AS mpa_name, " +
                 "GROUP_CONCAT(CONCAT(g.genre_id, ':', g.name)) AS all_genres " +
                 "FROM film AS f " +
@@ -44,7 +44,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film getFilm(int id) {
-        String sql = "SELECT f.*, COUNT(fl.user_id) AS total_likes," +
+        String sql = "SELECT f.*," +
                 "(SELECT fm.name WHERE fm.mpa_id = f.mpa_id) AS mpa_name, " +
                 "GROUP_CONCAT(CONCAT(g.genre_id, ':', g.name)) AS all_genres " +
                 "FROM film AS f " +
@@ -61,11 +61,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    /*
-    С жанрами если честно я недопонял. "Получать список жанров необходимо через сервис. Обрати внимание,
-    чтобы при получении всех фильмов, жанры были получены в одном запросе, а не выполнены в цикле перебором по фильмам".
-    Я перенёс MPA и жанры в сервис. Вроде получилось сделать 1 запросом. Я правильно понял замечание?
-     */
     private Film makeFilm(ResultSet rs) throws SQLException {
         String genres = (rs.getString("all_genres") != null) ? rs.getString("all_genres") : ":";
         return new Film(rs.getInt("film_id"),
@@ -73,7 +68,7 @@ public class FilmDbStorage implements FilmStorage {
                 rs.getString("description"),
                 rs.getObject("release_date", LocalDate.class),
                 rs.getInt("duration"),
-                rs.getInt("total_likes"),
+                rs.getInt("likes"),
                 getFilmGenres(genres),
                 new FilmMpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
     }
@@ -161,11 +156,32 @@ public class FilmDbStorage implements FilmStorage {
     public void setLike(int filmId, int userId) {
         String sql = "INSERT INTO film_likes(film_id, user_id) VALUES(?,?)";
         jdbcTemplate.update(sql, filmId, userId);
+        updateFilmLikes(filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
+        updateFilmLikes(filmId);
+    }
+
+    private void updateFilmLikes(int filmId) {
+        String sql = "UPDATE film SET likes = (SELECT COUNT(user_id) FROM film_likes WHERE film_id = ?) WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId, filmId);
+    }
+
+    //todo исправить вместе findall
+    public List<Film> topLikedFilms(int count) {
+        String sql = "SELECT f.*, COUNT(fl.user_id) AS total_likes," +
+                "(SELECT fm.name WHERE fm.MPA_ID = f.MPA_ID) AS mpa_name, " +
+                "GROUP_CONCAT(CONCAT(g.genre_id, ':', g.name)) AS all_genres " +
+                "FROM film AS f " +
+                "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                "LEFT JOIN mpa AS fm ON f.mpa_id = fm.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
+                "GROUP BY f.film_id ORDER BY f.likes LIMIT ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), count);
     }
 
     private int getLastAddedFilmId() {
