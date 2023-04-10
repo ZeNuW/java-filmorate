@@ -76,9 +76,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         //Film_genre table
         updateFilmGenre(film);
-        //Load filmGenre
-        film = getFilm(film.getId());
-        loadGenre(film);
         log.debug("Добавлен фильм: " + film);
         return film;
     }
@@ -96,9 +93,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
         //film_genre table
         updateFilmGenre(film);
-        //Load filmGenre
-        film = getFilm(film.getId());
-        loadGenre(film);
         log.debug("Обновлён фильм: " + film);
         return film;
     }

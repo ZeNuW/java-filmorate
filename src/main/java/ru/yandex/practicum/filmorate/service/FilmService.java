@@ -36,11 +36,13 @@ public class FilmService {
     }
 
     public Film create(Film film) {
-        return filmStorage.create(film);
+        film = filmStorage.create(film);
+        return getFilm(film.getId());
     }
 
     public Film put(Film film) {
-        return filmStorage.put(film);
+        film = filmStorage.put(film);
+        return getFilm(film.getId());
     }
 
     public Film getFilm(int id) {
