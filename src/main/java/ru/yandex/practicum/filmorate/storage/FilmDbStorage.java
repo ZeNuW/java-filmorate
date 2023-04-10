@@ -62,12 +62,9 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     /*
-    С жанрами если честно я вообще не понял. "Получать список жанров необходимо через сервис. Обрати внимание,
+    С жанрами если честно я недопонял. "Получать список жанров необходимо через сервис. Обрати внимание,
     чтобы при получении всех фильмов, жанры были получены в одном запросе, а не выполнены в цикле перебором по фильмам".
-    Я перенёс MPA и жанры в сервис, отсюда доступа я к ним не имею. У меня получилось дублирование кода и я не совсем
-    понимаю, как мне сделать 1 запрос к жанрам, а после уже этот список как-то использовать для заполнения жанров всех фильмов.
-
-    Вроде получилось сделать 1 запросом. Надеюсь такое решение правильное.
+    Я перенёс MPA и жанры в сервис. Вроде получилось сделать 1 запросом. Я правильно понял замечание?
      */
     private Film makeFilm(ResultSet rs) throws SQLException {
         String genres = (rs.getString("all_genres") != null) ? rs.getString("all_genres") : ":";
@@ -132,33 +129,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void updateFilmGenre(Film film) {
-        String sql = "SELECT * FROM genres WHERE genre_id IN (SELECT genre_id FROM film_genres WHERE film_id = ?)";
+        String sql = "SELECT genre_id FROM genres WHERE genre_id IN (SELECT genre_id FROM film_genres WHERE film_id = ?)";
         Set<Integer> sqlTableGenres = new HashSet<>(
-                jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs).getId(), film.getId()));
+                jdbcTemplate.queryForList(sql, Integer.class, film.getId()));
         Set<Integer> filmGenres = new HashSet<>();
         if (film.getGenres() != null) {
             filmGenres = film.getGenres().stream().map(FilmGenre::getId).collect(Collectors.toSet());
         }
-        Set<Integer> genres;
-        if (sqlTableGenres.size() < filmGenres.size()) {
+        if (!filmGenres.isEmpty()) { //если жанры объекта film не пустые, добавляем тех, что нет в таблице
             sql = "INSERT INTO film_genres (film_id,genre_id) VALUES (?,?)";
-            genres = new HashSet<>(filmGenres);
-            genres.removeAll(sqlTableGenres);
-        } else if (sqlTableGenres.size() > filmGenres.size()) {
-            sql = "DELETE FROM film_genres WHERE film_id = ? AND genre_id = ?";
-            genres = new HashSet<>(sqlTableGenres);
-            genres.removeAll(filmGenres);
-        } else {
-            return;
+            updateGenreTable(sql, filmGenres, sqlTableGenres, film.getId());
         }
-        List<Object[]> args = genres.stream()
-                .map(genreId -> new Object[]{film.getId(), genreId})
-                .collect(Collectors.toList());
-        jdbcTemplate.batchUpdate(sql, args);
+        if (!sqlTableGenres.isEmpty()) { //если жанры таблицы фильма не пустые, удаляем те, которых нет в объекте film
+            sql = "DELETE FROM film_genres WHERE film_id = ? AND genre_id = ?";
+            updateGenreTable(sql, sqlTableGenres, filmGenres, film.getId());
+        }
     }
 
-    private FilmGenre makeFilmGenre(ResultSet rs) throws SQLException {
-        return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
+    private void updateGenreTable(String sql, Set<Integer> removeFrom, Set<Integer> removableElements, int filmId) {
+        removeFrom.removeAll(removableElements);
+        if (removeFrom.isEmpty()) {
+            return;
+        }
+        List<Object[]> args = removeFrom.stream()
+                .map(genreId -> new Object[]{filmId, genreId})
+                .collect(Collectors.toList());
+        jdbcTemplate.batchUpdate(sql, args);
     }
 
     private int getLastAddedFilmId() {
