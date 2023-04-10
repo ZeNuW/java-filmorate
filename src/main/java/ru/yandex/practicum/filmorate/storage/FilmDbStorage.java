@@ -180,7 +180,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN mpa AS fm ON f.mpa_id = fm.mpa_id " +
                 "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "GROUP BY f.film_id ORDER BY f.likes LIMIT ?";
+                "GROUP BY f.film_id ORDER BY f.likes DESC LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), count);
     }
 
