@@ -158,6 +158,16 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.batchUpdate(sql, args);
     }
 
+    public void setLike(int filmId, int userId) {
+        String sql = "INSERT INTO film_likes(film_id, user_id) VALUES(?,?)";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    public void deleteLike(int filmId, int userId) {
+        String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, filmId, userId);
+    }
+
     private int getLastAddedFilmId() {
         String sql = "SELECT MAX(film_id) FROM film";
         Integer lastId = jdbcTemplate.queryForObject(sql, Integer.class);

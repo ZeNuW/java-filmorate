@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.UserDataException;
 import ru.yandex.practicum.filmorate.exception.UserNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -127,7 +129,7 @@ public class UserDbStorage implements UserStorage {
                 rs.getString("login"),
                 rs.getString("email"),
                 rs.getObject("birthday", LocalDate.class),
-                 getUserFriends(rs.getInt("user_id")));
+                getUserFriends(rs.getInt("user_id")));
     }
 
     private Set<Integer> getUserFriends(int userId) {
@@ -142,5 +144,54 @@ public class UserDbStorage implements UserStorage {
             return userId;
         }
         return 0;
+    }
+
+    public List<User> getFriends(int id) {
+        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
+        List<Integer> friendIds = jdbcTemplate.queryForList(sql, Integer.class, id);
+        return friendIds.stream().map(this::getUser).collect(Collectors.toList());
+    }
+
+    public void addFriend(int id, int friendId) {
+        if (id <= 0) {
+            throw new UserDataException("Передан отрицательный id " + id);
+        }
+        if (friendId <= 0) {
+            throw new UserDataException("Передан отрицательный id " + friendId);
+        }
+        if (getFriends(id).contains(getUser(friendId))) {
+            throw new UserDataException("Этот пользователь уже ваш друг");
+        }
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?,?)";
+        jdbcTemplate.update(sql, id, friendId);
+        if (getFriends(friendId).contains(getUser(id))) {
+            sql = "UPDATE friends SET CONFIRMED_STATUS = true WHERE user_id = ? AND friend_id = ?";
+            jdbcTemplate.update(sql, id, friendId);
+            jdbcTemplate.update(sql, friendId, id);
+        }
+    }
+
+    public void deleteFriend(int id, int friendId) {
+        if (id <= 0) {
+            throw new UserDataException("Передан отрицательный id " + id);
+        }
+        if (friendId <= 0) {
+            throw new UserDataException("Передан отрицательный id " + friendId);
+        }
+        if (!getFriends(id).contains(getUser(friendId))) {
+            throw new UserDataException("Этот пользователь не является вашим другом");
+        }
+        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, id, friendId);
+        sql = "UPDATE friends SET CONFIRMED_STATUS = false WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, friendId, id);
+    }
+
+    public List<User> getMutualFriends(int id, int friendId) {
+        String sql = "SELECT f1.friend_id FROM friends f1 " +
+                "INNER JOIN friends f2 ON f1.friend_id = f2.friend_id " +
+                "WHERE f1.user_id = ? AND f2.user_id = ?";
+        List<Integer> mutualFriendsId = jdbcTemplate.queryForList(sql, Integer.class, id, friendId);
+        return mutualFriendsId.stream().map(this::getUser).collect(Collectors.toList());
     }
 }
