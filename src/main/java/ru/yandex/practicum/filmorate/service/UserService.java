@@ -86,7 +86,7 @@ public class UserService {
 
     public List<User> getMutualFriends(int id, int friendId) {
         String sql = "SELECT f1.friend_id FROM friends f1 " +
-                "INNER JOIN friends f2 ON f1.friend_id = f2.friend_id \n" +
+                "INNER JOIN friends f2 ON f1.friend_id = f2.friend_id " +
                 "WHERE f1.user_id = ? AND f2.user_id = ?";
         List<Integer> mutualFriendsId = jdbcTemplate.queryForList(sql, Integer.class,id, friendId);
         return mutualFriendsId.stream().map(this::getUser).collect(Collectors.toList());

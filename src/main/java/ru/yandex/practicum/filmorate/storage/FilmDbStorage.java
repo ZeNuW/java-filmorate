@@ -31,9 +31,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> findAll() {
         String sql = "SELECT f.*, COUNT(fl.user_id) AS total_likes," +
-                "(SELECT fm.name WHERE fm.MPA_ID = f.MPA_ID) AS mpa_name FROM film AS f " +
+                "(SELECT fm.name WHERE fm.MPA_ID = f.MPA_ID) AS mpa_name, " +
+                "GROUP_CONCAT(CONCAT(g.genre_id, ':', g.name)) AS all_genres " +
+                "FROM film AS f " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
                 "LEFT JOIN mpa AS fm ON f.mpa_id = fm.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "GROUP BY f.film_id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs));
     }
@@ -41,9 +45,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilm(int id) {
         String sql = "SELECT f.*, COUNT(fl.user_id) AS total_likes," +
-                "(SELECT fm.name WHERE fm.mpa_id = f.mpa_id) AS mpa_name FROM film AS f " +
+                "(SELECT fm.name WHERE fm.mpa_id = f.mpa_id) AS mpa_name, " +
+                "GROUP_CONCAT(CONCAT(g.genre_id, ':', g.name)) AS all_genres " +
+                "FROM film AS f " +
                 "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
                 "LEFT JOIN mpa AS fm ON f.mpa_id = fm.mpa_id " +
+                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
                 "WHERE f.film_id = ? GROUP BY f.film_id";
         List<Film> film = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), id);
         if (!film.isEmpty()) {
@@ -58,16 +66,31 @@ public class FilmDbStorage implements FilmStorage {
     чтобы при получении всех фильмов, жанры были получены в одном запросе, а не выполнены в цикле перебором по фильмам".
     Я перенёс MPA и жанры в сервис, отсюда доступа я к ним не имею. У меня получилось дублирование кода и я не совсем
     понимаю, как мне сделать 1 запрос к жанрам, а после уже этот список как-то использовать для заполнения жанров всех фильмов.
+
+    Вроде получилось сделать 1 запросом. Надеюсь такое решение правильное.
      */
     private Film makeFilm(ResultSet rs) throws SQLException {
+        String genres = (rs.getString("all_genres") != null) ? rs.getString("all_genres") : ":";
         return new Film(rs.getInt("film_id"),
                 rs.getString("name"),
                 rs.getString("description"),
                 rs.getObject("release_date", LocalDate.class),
                 rs.getInt("duration"),
                 rs.getInt("total_likes"),
-                getFilmGenres(rs.getInt("film_id")),
+                getFilmGenres(genres),
                 new FilmMpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
+    }
+
+    private Set<FilmGenre> getFilmGenres(String genres) {
+        if (genres.equals(":")) {
+            return new HashSet<>();
+        }
+        return Arrays.stream(genres.split(","))
+                .map(genre -> {
+                    String[] parts = genre.split(":");
+                    return new FilmGenre(Integer.parseInt(parts[0]), parts[1]);
+                })
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -108,19 +131,8 @@ public class FilmDbStorage implements FilmStorage {
         return getFilm(film.getId());
     }
 
-    private Set<FilmGenre> getFilmGenres(int filmId) {
-        String sql = "SELECT genres.genre_id AS genre_id, genres.name AS name FROM genres " +
-                "JOIN film_genres ON genres.genre_id = film_genres.genre_id " +
-                "WHERE film_genres.film_id = " + filmId + " ORDER BY genres.genre_id";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs)));
-    }
-
-    private FilmGenre makeFilmGenre(ResultSet rs) throws SQLException {
-        return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
-    }
-
     private void updateFilmGenre(Film film) {
-        String sql = "SELECT * FROM genres where genre_id IN (SELECT genre_id FROM film_genres WHERE film_id = ?)";
+        String sql = "SELECT * FROM genres WHERE genre_id IN (SELECT genre_id FROM film_genres WHERE film_id = ?)";
         Set<Integer> sqlTableGenres = new HashSet<>(
                 jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs).getId(), film.getId()));
         Set<Integer> filmGenres = new HashSet<>();
@@ -143,6 +155,10 @@ public class FilmDbStorage implements FilmStorage {
                 .map(genreId -> new Object[]{film.getId(), genreId})
                 .collect(Collectors.toList());
         jdbcTemplate.batchUpdate(sql, args);
+    }
+
+    private FilmGenre makeFilmGenre(ResultSet rs) throws SQLException {
+        return new FilmGenre(rs.getInt("genre_id"), rs.getString("name"));
     }
 
     private int getLastAddedFilmId() {
