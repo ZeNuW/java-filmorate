@@ -22,14 +22,17 @@ public class FilmService {
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage, FilmInformation filmInformation) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       FilmInformation filmInformation) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.filmInformation = filmInformation;
     }
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+        films.forEach(filmStorage::loadGenre);
+        return films;
     }
 
     public Film create(Film film) {
@@ -41,23 +44,27 @@ public class FilmService {
     }
 
     public Film getFilm(int id) {
-        return filmStorage.getFilm(id);
+        Film film = filmStorage.getFilm(id);
+        filmStorage.loadGenre(film);
+        return film;
     }
 
     public void setLike(int filmId, int userId) {
         getFilm(filmId);
         userStorage.getUser(userId);
-        filmStorage.setLike(filmId,userId);
+        filmStorage.setLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
         getFilm(filmId);
         userStorage.getUser(userId);
-        filmStorage.deleteLike(filmId,userId);
+        filmStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> topLikedFilms(int count) {
-        return filmStorage.topLikedFilms(count);
+        List<Film> topFilms = filmStorage.topLikedFilms(count);
+        topFilms.forEach(filmStorage::loadGenre);
+        return topFilms;
     }
 
     public FilmGenre getGenre(int genreId) {
