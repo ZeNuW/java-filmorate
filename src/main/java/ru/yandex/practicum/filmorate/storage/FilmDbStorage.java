@@ -147,11 +147,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void updateGenreTable(String sql, Set<Integer> removeFrom, Set<Integer> removableElements, int filmId) {
-        removeFrom.removeAll(removableElements);
-        if (removeFrom.isEmpty()) {
+        Set<Integer> diff = new HashSet<>(removeFrom);
+        diff.removeAll(removableElements);
+        if (diff.isEmpty()) {
             return;
         }
-        List<Object[]> args = removeFrom.stream()
+        List<Object[]> args = diff.stream()
                 .map(genreId -> new Object[]{filmId, genreId})
                 .collect(Collectors.toList());
         jdbcTemplate.batchUpdate(sql, args);
