@@ -157,6 +157,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void loadGenre(List<Film> films) {
+        /*
+        Не придумал ничего проще, наверное это можно сделать.
+        Почему-то H2 не захотел принимать массив или список в "?", пришлось делать столько же ?, сколько и фильмов.
+        Если ставил fg.film_id IN (?), при использовании массива, он думал, что это отдельные аргументы, а списки
+        вообще не воспринимал.
+         */
         Map<Integer, Film> filmsMap = films.stream().collect(
                 Collectors.toMap(Film::getId, Function.identity()));
         String sql = "SELECT fg.genre_id AS genre_id, g.name AS name, fg.film_id as film_id FROM film_genres AS fg " +
