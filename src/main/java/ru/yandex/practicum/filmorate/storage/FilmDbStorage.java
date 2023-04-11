@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -127,12 +128,14 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.batchUpdate(sql, args);
     }
 
+    @Override
     public void setLike(int filmId, int userId) {
         String sql = "INSERT INTO film_likes(film_id, user_id) VALUES(?,?)";
         jdbcTemplate.update(sql, filmId, userId);
         updateFilmLikes(filmId);
     }
 
+    @Override
     public void deleteLike(int filmId, int userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
@@ -140,27 +143,32 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void updateFilmLikes(int filmId) {
-        String sql = "UPDATE film SET likes = (SELECT COUNT(user_id) FROM film_likes WHERE film_id = ?) WHERE film_id = ?";
-        jdbcTemplate.update(sql, filmId, filmId);
+        String sql = "UPDATE film f SET likes = " +
+                "(SELECT COUNT(fl.user_id) FROM film_likes fl WHERE fl.film_id = f.film_id) WHERE film_id = ?";
+        jdbcTemplate.update(sql, filmId);
     }
 
+    @Override
     public List<Film> topLikedFilms(int count) {
         String sql = "SELECT f.*, m.mpa_id AS mpa_id, m.name AS mpa_name FROM film f, MPA m " +
                 "WHERE f.mpa_id = m.mpa_id ORDER BY f.likes DESC LIMIT ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), count);
     }
 
-    public void loadGenre(Film film) {
-        String sql = "SELECT fg.genre_id AS id, g.name AS name FROM film_genres AS fg " +
+    @Override
+    public void loadGenre(List<Film> films) {
+        Map<Integer, Film> filmsMap = films.stream().collect(
+                Collectors.toMap(Film::getId, Function.identity()));
+        String sql = "SELECT fg.genre_id AS genre_id, g.name AS name, fg.film_id as film_id FROM film_genres AS fg " +
                 "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "WHERE fg.film_id = ?";
-        List<FilmGenre> filmGenres =
-                jdbcTemplate.query(sql, (rs, rowNum) -> getFilmGenres(rs), film.getId());
-        filmGenres.forEach(genre -> film.getGenres().add(genre));
-    }
-
-    private FilmGenre getFilmGenres(ResultSet rs) throws SQLException {
-        return new FilmGenre(rs.getInt("id"), rs.getString("name"));
+                "WHERE fg.film_id IN (" + String.join(",", Collections.nCopies(films.size(), "?")) + ")";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, filmsMap.keySet().toArray());
+        rows.forEach(filmMap -> {
+            int filmId = Integer.parseInt(String.valueOf(filmMap.get("film_id")));
+            filmsMap.get(filmId).getGenres().add(
+                    new FilmGenre(Integer.parseInt(String.valueOf(filmMap.get("genre_id"))),
+                            String.valueOf(filmMap.get("name"))));
+        });
     }
 
     private int getLastAddedFilmId() {

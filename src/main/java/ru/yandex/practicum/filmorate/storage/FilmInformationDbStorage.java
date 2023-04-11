@@ -20,6 +20,7 @@ public class FilmInformationDbStorage implements FilmInformation {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public FilmGenre getGenre(int genreId) {
         String sql = "SELECT * FROM GENRES where genre_id = ?";
         List<FilmGenre> filmGenre =
@@ -31,11 +32,13 @@ public class FilmInformationDbStorage implements FilmInformation {
         }
     }
 
+    @Override
     public Set<FilmGenre> getAllGenres() {
         String sql = "SELECT * FROM GENRES ORDER BY genre_id";
         return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmGenre(rs)));
     }
 
+    @Override
     public FilmMpa getMpa(int mpaId) {
         String sql = "SELECT * FROM mpa WHERE mpa_id = ?";
         List<FilmMpa> filmMpa = jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs), mpaId);
@@ -46,6 +49,7 @@ public class FilmInformationDbStorage implements FilmInformation {
         }
     }
 
+    @Override
     public Set<FilmMpa> getAllMpa() {
         String sql = "SELECT * FROM MPA ORDER BY mpa_id";
         return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> makeFilmMpa(rs)));

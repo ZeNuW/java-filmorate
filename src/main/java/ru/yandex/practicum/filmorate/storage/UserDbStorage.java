@@ -146,11 +146,13 @@ public class UserDbStorage implements UserStorage {
         return 0;
     }
 
+    @Override
     public List<User> getFriends(int id) {
         String sql = "SELECT * FROM users WHERE user_id IN (SELECT friend_id FROM friends WHERE user_id = " + id + ")";
         return jdbcTemplate.query(sql, (rs, rowNum) -> makeUser(rs));
     }
 
+    @Override
     public void addFriend(int id, int friendId) {
         if (id <= 0) {
             throw new UserDataException("Передан отрицательный id " + id);
@@ -170,6 +172,7 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
     public void deleteFriend(int id, int friendId) {
         if (id <= 0) {
             throw new UserDataException("Передан отрицательный id " + id);
@@ -186,6 +189,7 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(sql, friendId, id);
     }
 
+    @Override
     public List<User> getMutualFriends(int id, int friendId) {
         String sql = "SELECT f1.friend_id FROM friends f1 " +
                 "INNER JOIN friends f2 ON f1.friend_id = f2.friend_id " +

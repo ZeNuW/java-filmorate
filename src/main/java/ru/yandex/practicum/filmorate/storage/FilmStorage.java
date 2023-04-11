@@ -20,5 +20,5 @@ public interface FilmStorage {
 
     List<Film> topLikedFilms(int count);
 
-    void loadGenre(Film film);
+    void loadGenre(List<Film> films);
 }

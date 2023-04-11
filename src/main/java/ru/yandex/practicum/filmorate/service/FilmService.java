@@ -31,7 +31,7 @@ public class FilmService {
 
     public List<Film> findAll() {
         List<Film> films = filmStorage.findAll();
-        films.forEach(filmStorage::loadGenre);
+        filmStorage.loadGenre(films);
         return films;
     }
 
@@ -47,7 +47,7 @@ public class FilmService {
 
     public Film getFilm(int id) {
         Film film = filmStorage.getFilm(id);
-        filmStorage.loadGenre(film);
+        filmStorage.loadGenre(List.of(film));
         return film;
     }
 
@@ -65,7 +65,7 @@ public class FilmService {
 
     public List<Film> topLikedFilms(int count) {
         List<Film> topFilms = filmStorage.topLikedFilms(count);
-        topFilms.forEach(filmStorage::loadGenre);
+        filmStorage.loadGenre(topFilms);
         return topFilms;
     }
 
