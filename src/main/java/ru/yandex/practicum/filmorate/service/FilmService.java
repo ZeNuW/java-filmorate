@@ -1,73 +1,87 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotExistException;
-import ru.yandex.practicum.filmorate.exception.UserNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmMpa;
+import ru.yandex.practicum.filmorate.storage.FilmInformation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Service
 public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmInformation filmInformation;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       FilmInformation filmInformation) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.filmInformation = filmInformation;
     }
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+        filmStorage.loadGenre(films);
+        return films;
     }
 
     public Film create(Film film) {
-        return filmStorage.create(film);
+        film = filmStorage.create(film);
+        return getFilm(film.getId());
     }
 
     public Film put(Film film) {
-        return filmStorage.put(film);
+        film = filmStorage.put(film);
+        return getFilm(film.getId());
     }
 
     public Film getFilm(int id) {
-        return filmStorage.getFilm(id);
+        Film film = filmStorage.getFilm(id);
+        filmStorage.loadGenre(List.of(film));
+        return film;
     }
 
     public void setLike(int filmId, int userId) {
-        if (getFilm(filmId) == null) {
-            throw new FilmNotExistException("Фильм с id: " + filmId + " не найден.");
-        }
-        if (userStorage.getUser(userId) == null) {
-            throw new UserNotExistException("Не найден пользователь с id:" + userId);
-        }
-        getFilm(filmId).getLikes().add(userId);
+        getFilm(filmId);
+        userStorage.getUser(userId);
+        filmStorage.setLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        if (getFilm(filmId) == null) {
-            throw new FilmNotExistException("Фильм с id: " + filmId + " не найден.");
-        }
-        if (userStorage.getUser(userId) == null) {
-            throw new UserNotExistException("Не найден пользователь с id:" + userId);
-        }
-        getFilm(filmId).getLikes().remove(userId);
+        getFilm(filmId);
+        userStorage.getUser(userId);
+        filmStorage.deleteLike(filmId, userId);
     }
 
     public List<Film> topLikedFilms(int count) {
-        // TODO подумать над более быстрой сортировкой
-        return filmStorage.findAll().stream()
-                .sorted(this::compare)
-                .limit(count)
-                .collect(Collectors.toList());
+        List<Film> topFilms = filmStorage.topLikedFilms(count);
+        filmStorage.loadGenre(topFilms);
+        return topFilms;
     }
 
-    private int compare(Film f0, Film f1) {
-        return Integer.compare(f1.getLikes().size(), f0.getLikes().size());
+    public FilmGenre getGenre(int genreId) {
+        return filmInformation.getGenre(genreId);
+    }
+
+    public Set<FilmGenre> getAllGenres() {
+        return filmInformation.getAllGenres();
+    }
+
+    public FilmMpa getMpa(int mpaId) {
+        return filmInformation.getMpa(mpaId);
+    }
+
+    public Set<FilmMpa> getAllMpa() {
+        return filmInformation.getAllMpa();
     }
 }
